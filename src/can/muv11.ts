@@ -1,5 +1,5 @@
 export const CAN_PAYLOAD  = {
-    "0x20": {
+    "20": {
         "nombre_grandeurs": 5,
         "grandeurs": [
             {
@@ -44,7 +44,7 @@ export const CAN_PAYLOAD  = {
             }
         ]
     },
-    "0x30": {
+    "30": {
         "nombre_grandeurs": 5,
         "grandeurs": [
             {
@@ -89,7 +89,7 @@ export const CAN_PAYLOAD  = {
             }
         ]
     },
-    "0x40": {
+    "40": {
         "nombre_grandeurs": 34,
         "grandeurs": [
           {
@@ -366,7 +366,7 @@ export const CAN_PAYLOAD  = {
           }
         ]
       },
-      "0x50": {
+      "50": {
         "nombre_grandeurs": 4,
         "grandeurs": [
           {
@@ -403,7 +403,7 @@ export const CAN_PAYLOAD  = {
           }
         ]
       },
-      "0x70": {
+      "70": {
         "nombre_grandeurs": 2,
         "grandeurs": [
           {
@@ -424,7 +424,7 @@ export const CAN_PAYLOAD  = {
           }
         ]
       },
-        "0x80": {
+        "80": {
             "nombre_grandeurs": 7,
             "grandeurs": [
             {
@@ -485,7 +485,7 @@ export const CAN_PAYLOAD  = {
             }
             ]
         },
-      "0x90": {
+      "90": {
         "nombre_grandeurs": 10,
         "grandeurs": [
           {
@@ -578,7 +578,7 @@ export const CAN_PAYLOAD  = {
           }
         ]
       },
-      "0x1200": {
+      "1200": {
         "nombre_grandeurs": 2,
         "grandeurs": [
           {
@@ -599,7 +599,7 @@ export const CAN_PAYLOAD  = {
           }
         ]
       },
-      "0x1300": {
+      "1300": {
         "nombre_grandeurs": 2,
         "grandeurs": [
           {
@@ -620,7 +620,7 @@ export const CAN_PAYLOAD  = {
           }
         ]
       },
-      "0x1400": {
+      "1400": {
         "nombre_grandeurs": 2,
         "grandeurs": [
           {
@@ -641,7 +641,7 @@ export const CAN_PAYLOAD  = {
           }
         ]
       },
-      "0x1500": {
+      "1500": {
         "nombre_grandeurs": 6,
         "grandeurs": [
           {

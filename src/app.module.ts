@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
-import { SerialModule } from './serial/serial.module';
+import { CanModule } from './can/can.module';
 import { MqttModule } from './mqtt/mqtt.module';
-import { EventModule } from './event/event.module';
-import { PrismaModule } from './prisma/prisma.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { AlertModule } from './alert/alert.module';
-import { StatusModule } from './status/status.module';
-import { ProcessModule } from './process/process.module';
+import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [
-    ScheduleModule.forRoot(), MqttModule, ProcessModule, SerialModule, EventModule, PrismaModule, AlertModule, StatusModule],
+    ConfigModule.forRoot(),
+    ScheduleModule.forRoot(), 
+    MqttModule, 
+    CanModule
+  ],
   controllers: [],
   providers: [],
 })

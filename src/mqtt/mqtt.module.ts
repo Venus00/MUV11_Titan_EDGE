@@ -1,8 +1,8 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { MqttService } from './mqtt.service';
-import { SerialModule } from 'src/serial/serial.module';
+import { CanModule } from 'src/can/can.module';
 @Module({
-  imports: [forwardRef(() => SerialModule)],
+  imports: [],
   providers: [MqttService],
   exports: [MqttService]
 })

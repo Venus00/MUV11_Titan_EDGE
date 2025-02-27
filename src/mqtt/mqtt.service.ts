@@ -6,8 +6,8 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import * as mqtt from 'mqtt';
-import { SerialService } from 'src/serial/serial.service';
-import { commands } from 'src/serial/commands';
+import { CanService } from 'src/can/can.service';
+import { commands } from 'src/can/commands';
 import { execSync } from 'child_process';
 @Injectable()
 export class MqttService implements OnModuleInit {
@@ -20,10 +20,7 @@ export class MqttService implements OnModuleInit {
   private TOPIC_PUBLISH_STATUS: string;
   protected total_event: number = 0;
   protected total_alert: number = 0;
-  constructor(
-    @Inject(forwardRef(() => SerialService))
-    private readonly serial: SerialService,
-  ) {}
+  constructor() { }
 
   async onModuleInit() {
     this.logger.log(process.env.MQTT_SERVER);
@@ -49,13 +46,11 @@ export class MqttService implements OnModuleInit {
       reconnectPeriod: 1,
     });
     this.client.on('connect', this.onConnect.bind(this));
-    this.client.on('message', this.onMessage.bind(this));
     this.client.on('disconnect', this.onDisconnect.bind(this));
   }
 
   onConnect() {
     this.logger.log('mqtt server is connected');
-    this.client.subscribe(this.TOPIC_SUBSCRIBE);
   }
   onDisconnect() {
     this.logger.error('mqtt server is disconnected');
@@ -67,33 +62,8 @@ export class MqttService implements OnModuleInit {
   publishPayload(message: string) {
     this.client.publish(this.TOPIC_PUBLISH_PAYLOAD, message);
   }
-  publishAlert(message: string) {
-    this.client.publish(this.TOPIC_PUBLISH_ALERTE, message);
-  }
+
   getConnectionState() {
     return this.client.connected;
-  }
-
-  onMessage(topic: string, message: string) {
-    try {
-      const payload = JSON.parse(message);
-      if (commands.hasOwnProperty(payload.command)) {
-        this.logger.log('[i] sending command ...');
-        this.serial.write(commands[payload.command]);
-      } else {
-        if (payload.type === 'DATETIME') {
-          this.logger.log('set Datetime');
-          this.serial.write(Buffer.from(payload.command));
-        } else if (payload.type === 'DELTA') {
-          if (payload.command < 150000 && payload.command > 1) {
-            this.serial.changehandleRequestJob(payload.command.toString());
-          }
-        } else {
-          this.logger.log('command not exist');
-        }
-      }
-    } catch (error) {
-      this.logger.error(error);
-    }
   }
 }
