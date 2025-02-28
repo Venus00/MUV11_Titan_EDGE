@@ -118,16 +118,10 @@ export class CanService implements OnModuleInit {
       if (can_id in CAN_PAYLOAD) {
         const config = CAN_PAYLOAD[can_id].grandeurs;
         const metrics = this.calculateParameters(buffer, config);
-<<<<<<< HEAD
         Object.assign(this.payload.metrics, metrics)
         this.payload.deviceId = can_id;
         //this.payload.timeStamp = this.getTimestampFromRtc();
         this.logger.log(metrics)
-=======
-        this.payload.metrics = metrics;
-        this.payload.timeStamp = this.getTimestampFromRtc();
-        console.log(JSON.stringify(metrics))
->>>>>>> 434f0577aca8889ee9873d7d4f382fa52a34eee3
       }
 
     } catch (error) {

@@ -18,7 +18,7 @@ type Results = Record<string, number | string | null>;
 export class CanService implements OnModuleInit {
   private reader;
   private readonly logger = new Logger(CanService.name);
-  private last_time = Date.now();
+  private last_time = new Date().getTime();
   private counter = 0;
   private canId = undefined;
   private lastMessageTime = Date.now()
@@ -72,7 +72,7 @@ export class CanService implements OnModuleInit {
 
   async restartCAN() {
     try {
-      execSync("sudo ip link set can0 down && sudo ip link set up can0 type can bitrate 250000");
+      execSync("sudo ip link set can0 down && sudo  ip link set can0 up");
       this.reader = can.createRawChannel("can0", true);
       this.reader.addListener("onMessage", this.onReaderData.bind(this));
       this.reader.start()
@@ -93,18 +93,14 @@ export class CanService implements OnModuleInit {
   }
 
   async handleCanPayload() {
-    const now = Date.now();
+    const now = new Date().getTime();
     const payload_length = Object.keys(this.payload.metrics).length;
-    console.log("payload", payload_length)
-    if (payload_length >= 80) {
+    if (payload_length === 20) {
+
       this.mqttService.publishPayload(JSON.stringify(this.payload));
-      this.payload.metrics = {};
     }
-    else if (((now - this.last_time) > 1000) && (payload_length !== 0)) {
-      console.log("publish payload")
+    else if (((now - this.last_time) / 1000 > 1000) && payload_length !== 0) {
       this.mqttService.publishPayload(JSON.stringify(this.payload));
-      this.payload.metrics = {};
-      this.last_time = Date.now();
     }
   }
 
@@ -112,22 +108,16 @@ export class CanService implements OnModuleInit {
     try {
       this.lastMessageTime = Date.now();
 
+      console.log(this.counter++, data);
       const can_id = parseInt(data.id).toString(16)
-      //this.logger.log("can Id : ", can_id)
+      this.logger.log("can Id : ", can_id)
       const buffer = data.data;
       if (can_id in CAN_PAYLOAD) {
         const config = CAN_PAYLOAD[can_id].grandeurs;
         const metrics = this.calculateParameters(buffer, config);
-<<<<<<< HEAD
-        Object.assign(this.payload.metrics, metrics)
-        this.payload.deviceId = can_id;
-        //this.payload.timeStamp = this.getTimestampFromRtc();
-        this.logger.log(metrics)
-=======
         this.payload.metrics = metrics;
         this.payload.timeStamp = this.getTimestampFromRtc();
         console.log(JSON.stringify(metrics))
->>>>>>> 434f0577aca8889ee9873d7d4f382fa52a34eee3
       }
 
     } catch (error) {
