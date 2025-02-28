@@ -3,7 +3,7 @@ import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import { commands } from './commands';
 import { CronJob, CronTime } from 'cron';
 import * as can from "socketcan";
-import { execSync } from 'child_process';
+import { exec, execSync } from 'child_process';
 import { MqttService } from 'src/mqtt/mqtt.service';
 import { networkInterfaces } from 'os';
 
@@ -27,20 +27,21 @@ export class SyncService implements OnModuleInit {
 
   async onModuleInit() {
     this.logger.log('[d] syncronisation service ...');
+    this.payload.mac_address = this.getMacAddress();
     this.syncTimeWithNtp(process.env.NTP_SERVER);
     this.updateRtc();
   }
 
-  @Cron('* * * * *')
+  @Cron('* * * * * *')
   handleSyncronisation() {
 
     console.log("publish status");
     this.payload.ip_address = this.getIpAddress();
-    this.payload.mac_address = this.getMacAddress();
     this.payload.uptime = this.getUptime();
     this.payload.uptime_s = this.getUptimeS();
     this.payload.storage_avail = this.getStorageAvail();
     this.payload.time_stamp = this.getTimestampFromRtc();
+    this.mqttService.publishStatus(JSON.stringify(this.payload));
   }
 
   getTimestampFromRtc(): string {
@@ -85,7 +86,7 @@ export class SyncService implements OnModuleInit {
   syncTimeWithNtp(ntpServer) {
     console.log(`Synchronizing time with NTP server: ${ntpServer}`);
     try {
-      execSync(`sudo ntpdate ${ntpServer}`);
+      exec(`sudo ntpdate ${ntpServer}`);
       console.log("System time synchronized with NTP server.");
     } catch (e) {
       console.error(`Failed to sync time: ${(e as Error).message}`);
@@ -127,7 +128,7 @@ export class SyncService implements OnModuleInit {
 
   getStorageAvail(): string {
     try {
-      const result = execSync("df -h /usr/share/OSIsoft", { encoding: "utf-8" });
+      const result = execSync("df -h /usr/share", { encoding: "utf-8" });
       const lines = result.split("\n");
       if (lines.length > 1) {
         const storageInfo = lines[1].split(/\s+/);

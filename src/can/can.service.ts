@@ -4,8 +4,7 @@ import { CronJob, CronTime } from 'cron';
 import * as can from "socketcan";
 import { CAN_PAYLOAD } from './muv11';
 import { MqttService } from 'src/mqtt/mqtt.service';
-import { execSync } from 'child_process';
-
+import { exec, execSync } from 'child_process';
 
 type ConfigItem = {
   nom: string;
@@ -20,7 +19,9 @@ export class CanService implements OnModuleInit {
   private reader;
   private readonly logger = new Logger(CanService.name);
   private last_time = new Date().getTime();
-  private job;
+  private counter = 0;
+  private canId = undefined;
+  private lastMessageTime = Date.now()
   private payload = {
     metrics: {},
     deviceId: process.env.DEVICE_ID,
@@ -41,20 +42,49 @@ export class CanService implements OnModuleInit {
     }, 50)
   }
 
-  init_device() {
+  async init_device() {
     try {
+      setInterval(async () => {
+        // console.log(Date.now() - this.lastMessageTime)
+
+        try {
+          if (Date.now() - this.lastMessageTime > 10) {
+            await this.restartCAN();
+            this.lastMessageTime = Date.now();
+          }
+        } catch (error) {
+
+        }
+      }, 1000);
+
       this.reader = can.createRawChannel("can0", true);
       this.reader.addListener("onMessage", this.onReaderData.bind(this));
       this.reader.start();
+
+
       return true;
     } catch (error) {
       console.log(error);
       return false;
     }
   }
+
+
+  async restartCAN() {
+    try {
+      execSync("sudo ip link set can0 down && sudo  ip link set can0 up");
+      this.reader = can.createRawChannel("can0", true);
+      this.reader.addListener("onMessage", this.onReaderData.bind(this));
+      this.reader.start()
+    } catch (error) {
+      throw error;
+    }
+
+  }
+
   getTimestampFromRtc(): string {
     try {
-      const result = execSync("date -u +'%Y-%m-%dT%H:%M:%SZ'", { encoding: "utf-8" }).trim();
+      const result = exec("date -u +'%Y-%m-%dT%H:%M:%SZ'", { encoding: "utf-8" }).toString().trim();
       console.log(`RTC time: ${result}`);
       return result;
     } catch (e) {
@@ -74,33 +104,20 @@ export class CanService implements OnModuleInit {
     }
   }
 
-
-  // startHandleMqttData(seconds: number) {
-  //   this.logger.log('[d] create Handle data from CAN ');
-  //   this.job = new CronJob(
-  //     `*/${seconds} * * * * *`,
-  //     this.handleRequestJob.bind(this),
-  //   );
-  //   this.schedulerRegistry.addCronJob('request', this.job);
-  //   this.job.start();
-  // }
-
-  async onReaderClose() {
-    this.logger.error('PORT CLOSED');
-  }
   onReaderData(data: any) {
     try {
-      console.log(data);
+      this.lastMessageTime = Date.now();
+
+      console.log(this.counter++, data);
       const can_id = parseInt(data.id).toString(16)
       this.logger.log("can Id : ", can_id)
       const buffer = data.data;
       if (can_id in CAN_PAYLOAD) {
-
         const config = CAN_PAYLOAD[can_id].grandeurs;
         const metrics = this.calculateParameters(buffer, config);
         this.payload.metrics = metrics;
         this.payload.deviceId = can_id;
-        this.payload.timeStamp = this.getTimestampFromRtc();
+        //this.payload.timeStamp = this.getTimestampFromRtc();
         console.log(JSON.stringify(metrics))
       }
 
