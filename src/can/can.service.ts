@@ -84,7 +84,7 @@ export class CanService implements OnModuleInit {
 
   getTimestampFromRtc(): string {
     try {
-      const result = exec("date -u +'%Y-%m-%dT%H:%M:%SZ'", { encoding: "utf-8" }).toString().trim();
+      const result = execSync("date -u +'%Y-%m-%dT%H:%M:%SZ'", { encoding: "utf-8" }).toString().trim();
       console.log(`RTC time: ${result}`);
       return result;
     } catch (e) {
@@ -156,6 +156,10 @@ export class CanService implements OnModuleInit {
         }
 
         results[nomKey] = typeof value === "number" ? parseFloat(value.toFixed(2)) : value;
+        if(typeof results[nomKey] ==='boolean')	
+        { 
+          results[nomKey] = Number(results[nomKey])
+        }
       } catch (e) {
         results[nomKey] = `Erreur: ${(e as Error).message}`;
       }
