@@ -36,23 +36,42 @@ export class SyncService implements OnModuleInit {
   handleSyncronisation() {
 
     console.log("publish status");
-    this.payload.IP_Address	 = this.getIpAddress();
-    this.payload.uptime = this.getUptime();
-    this.payload.uptime_s = this.getUptimeS();
-    this.payload.storage_avail = this.getStorageAvail();
-    this.payload.Timestamp = this.getTimestampFromRtc();
-    this.mqttService.publishStatus(JSON.stringify(this.payload));
+    try {
+      this.payload.IP_Address	 = this.getIpAddress();
+      this.payload.uptime = this.getUptime();
+      this.payload.uptime_s = this.getUptimeS();
+      this.payload.storage_avail = this.getStorageAvail();
+      this.payload.Timestamp = this.getTimestampFromRTC();
+      this.mqttService.publishStatus(JSON.stringify(this.payload));
+    } catch (error) {
+      console.log("error status calculation")
+    }
+
   }
 
-  getTimestampFromRtc(): string {
-    try {
-      const result = execSync("date -u +'%Y-%m-%dT%H:%M:%SZ'", { encoding: "utf-8" }).trim();
-      console.log(`RTC time: ${result}`);
-      return result;
-    } catch (e) {
-      throw new Error(`Error executing date command: ${(e as Error).message}`);
-    }
+  getTimestampFromRTC() {
+      try {
+          const result = execSync("sudo hwclock --utc --noadjfile", { encoding: "utf8" }).trim();
+          console.log(`Raw RTC time: ${result}`);
+          const match = result.match(/([+-]\d{2})(\d{2})$/);
+          let totalOffsetMinutes = 0;
+          let rtcTimeStr = result;
+          if (match) {
+              const hoursOffset = parseInt(match[1], 10);
+              const minutesOffset = parseInt(match[2], 10);
+              totalOffsetMinutes = hoursOffset * 60 + minutesOffset * Math.sign(hoursOffset);
+              rtcTimeStr = result.slice(0, -5); 
+          }
+          let rtcDate = new Date(rtcTimeStr.replace(" ", "T") + "Z");
+          rtcDate.setUTCMinutes(rtcDate.getUTCMinutes() - totalOffsetMinutes);
+          return rtcDate.toISOString();
+  
+      } catch (error) {
+          throw new Error(`Error executing hwclock: ${error.message}`);
+      }
   }
+  
+
   getMacAddress() {
     try {
       return execSync(

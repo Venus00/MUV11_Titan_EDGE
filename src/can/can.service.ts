@@ -95,21 +95,34 @@ export class CanService implements OnModuleInit {
 
   }
 
-  getTimestampFromRtc(): string {
+  getTimestampFromRTC() {
     try {
-      const result = execSync("date -u +'%Y-%m-%dT%H:%M:%SZ'", { encoding: "utf-8" }).toString().trim();
-      console.log(`RTC time: ${result}`);
-      return result;
-    } catch (e) {
-      throw new Error(`Error executing date command: ${(e as Error).message}`);
+        const result = execSync("sudo hwclock --utc --noadjfile", { encoding: "utf8" }).trim();
+        console.log(`Raw RTC time: ${result}`);
+        const match = result.match(/([+-]\d{2})(\d{2})$/);
+        let totalOffsetMinutes = 0;
+        let rtcTimeStr = result;
+        if (match) {
+            const hoursOffset = parseInt(match[1], 10);
+            const minutesOffset = parseInt(match[2], 10);
+            totalOffsetMinutes = hoursOffset * 60 + minutesOffset * Math.sign(hoursOffset);
+            rtcTimeStr = result.slice(0, -5); 
+        }
+        let rtcDate = new Date(rtcTimeStr.replace(" ", "T") + "Z");
+        rtcDate.setUTCMinutes(rtcDate.getUTCMinutes() - totalOffsetMinutes);
+        return rtcDate.toISOString();
+
+    } catch (error) {
+        throw new Error(`Error executing hwclock: ${error.message}`);
     }
-  }
+}
+
 
   async handleCanPayload() {
     const now = Date.now();
     const payload_length = Object.keys(this.payload.Metrics).length;
     if (payload_length >= 80) {
-      this.payload.Timestamp = this.getTimestampFromRtc();
+      this.payload.Timestamp = this.getTimestampFromRTC();
       this.mqttService.publishPayload(JSON.stringify(this.payload));
       this.last_time = Date.now();
       this.payload.Metrics = {};
@@ -118,7 +131,7 @@ export class CanService implements OnModuleInit {
       console.log("publish payload")
       this.mqttService.publishPayload(JSON.stringify(this.payload));
       this.payload.Metrics = {};
-      this.payload.Timestamp = this.getTimestampFromRtc();	
+      this.payload.Timestamp = this.getTimestampFromRTC();	
       this.last_time = Date.now();
     }
   }
