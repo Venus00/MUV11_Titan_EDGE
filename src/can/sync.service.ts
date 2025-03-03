@@ -27,7 +27,7 @@ export class SyncService implements OnModuleInit {
 
   async onModuleInit() {
     this.logger.log('[d] syncronisation service ...');
-    this.payload.mac_address = this.getMacAddress();
+    this.payload.MAC_Address = this.getMacAddress();
     this.syncTimeWithNtp(process.env.NTP_SERVER);
     this.updateRtc();
   }
@@ -36,11 +36,11 @@ export class SyncService implements OnModuleInit {
   handleSyncronisation() {
 
     console.log("publish status");
-    this.payload.ip_address = this.getIpAddress();
+    this.payload.IP_Address	 = this.getIpAddress();
     this.payload.uptime = this.getUptime();
     this.payload.uptime_s = this.getUptimeS();
     this.payload.storage_avail = this.getStorageAvail();
-    this.payload.time_stamp = this.getTimestampFromRtc();
+    this.payload.Timestamp = this.getTimestampFromRtc();
     this.mqttService.publishStatus(JSON.stringify(this.payload));
   }
 
