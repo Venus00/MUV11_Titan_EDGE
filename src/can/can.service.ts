@@ -21,6 +21,7 @@ export class CanService implements OnModuleInit {
   private last_time = Date.now();
   private counter = 0;
   private canId = undefined;
+  private isChecking = false;
   private lastMessageTime = Date.now()
   private payload = {
     metrics: {},
@@ -46,15 +47,19 @@ export class CanService implements OnModuleInit {
     try {
       setInterval(async () => {
         // console.log(Date.now() - this.lastMessageTime)
-
-        try {
-          if (Date.now() - this.lastMessageTime > 10) {
-            await this.restartCAN();
-            this.lastMessageTime = Date.now();
+        // if(!this.isChecking)
+        // {
+        //   this.isChecking = true;
+          try {
+            if (Date.now() - this.lastMessageTime > 100) {
+              await this.restartCAN();
+              this.lastMessageTime = Date.now();
+            }
+          } catch (error) {
+  
           }
-        } catch (error) {
-
-        }
+        //}
+       
       }, 1000);
 
       this.reader = can.createRawChannel("can0", true);
@@ -72,10 +77,18 @@ export class CanService implements OnModuleInit {
 
   async restartCAN() {
     try {
-      execSync("sudo ip link set can0 down && sudo ip link set up can0 type can bitrate 250000");
-      this.reader = can.createRawChannel("can0", true);
-      this.reader.addListener("onMessage", this.onReaderData.bind(this));
-      this.reader.start()
+      console.log("...")
+      exec("sudo ip link set can0 down && sudo  ip link set up can0 type can bitrate 250000", (error, stdout, stderr) => {
+        if (error) {
+            console.error(`exec error: ${error}`);
+            return;
+        }
+        this.reader = can.createRawChannel("can0", true);
+        this.reader.addListener("onMessage", this.onReaderData.bind(this));
+        this.reader.start()
+        this.isChecking  = false;
+      });
+
     } catch (error) {
       throw error;
     }
@@ -95,10 +108,10 @@ export class CanService implements OnModuleInit {
   async handleCanPayload() {
     const now = Date.now();
     const payload_length = Object.keys(this.payload.metrics).length;
-    console.log("payload", payload_length)
     if (payload_length >= 80) {
       this.payload.timeStamp = this.getTimestampFromRtc();
       this.mqttService.publishPayload(JSON.stringify(this.payload));
+      this.last_time = Date.now();
       this.payload.metrics = {};
     }
     else if (((now - this.last_time) > 1000) && (payload_length !== 0)) {

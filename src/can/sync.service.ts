@@ -96,7 +96,7 @@ export class SyncService implements OnModuleInit {
   updateRtc() {
     console.log("Updating RTC with system time...");
     try {
-      execSync(`sudo hwclock --systohc`);
+      exec(`sudo hwclock --systohc`);
       console.log("RTC updated successfully.");
     } catch (e) {
       console.error(`Failed to update RTC: ${(e as Error).message}`);
