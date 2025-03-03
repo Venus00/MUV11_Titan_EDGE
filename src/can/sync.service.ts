@@ -12,13 +12,13 @@ export class SyncService implements OnModuleInit {
 
   private readonly logger = new Logger(SyncService.name);
   private payload = {
-    deviceId: process.env.DEVICE_ID,
-    mac_address: null,
-    ip_address: '',
+    DeviceId: process.env.DEVICE_ID,
+    MAC_Address: null,
+    IP_Address: '',
     uptime_s: null,
     uptime: null,
     storage_avail: null,
-    time_stamp: null
+    Timestamp: null
   }
   constructor(
     private mqttService: MqttService,
