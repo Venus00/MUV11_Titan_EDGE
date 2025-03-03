@@ -107,18 +107,18 @@ export class CanService implements OnModuleInit {
 
   async handleCanPayload() {
     const now = Date.now();
-    const payload_length = Object.keys(this.payload.metrics).length;
+    const payload_length = Object.keys(this.payload.Metrics).length;
     if (payload_length >= 80) {
-      this.payload.timeStamp = this.getTimestampFromRtc();
+      this.payload.Timestamp = this.getTimestampFromRtc();
       this.mqttService.publishPayload(JSON.stringify(this.payload));
       this.last_time = Date.now();
-      this.payload.metrics = {};
+      this.payload.Metrics = {};
     }
     else if (((now - this.last_time) > 1000) && (payload_length !== 0)) {
       console.log("publish payload")
       this.mqttService.publishPayload(JSON.stringify(this.payload));
-      this.payload.metrics = {};
-      this.payload.timeStamp = this.getTimestampFromRtc();	
+      this.payload.Metrics = {};
+      this.payload.Timestamp = this.getTimestampFromRtc();	
       this.last_time = Date.now();
     }
   }
@@ -133,7 +133,7 @@ export class CanService implements OnModuleInit {
       if (can_id in CAN_PAYLOAD) {
         const config = CAN_PAYLOAD[can_id].grandeurs;
         const metrics = this.calculateParameters(buffer, config);
-        Object.assign(this.payload.metrics, metrics)
+        Object.assign(this.payload.Metrics, metrics)
         this.logger.log(metrics)
         console.log(JSON.stringify(metrics))
       }
