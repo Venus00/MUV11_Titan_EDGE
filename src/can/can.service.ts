@@ -24,9 +24,9 @@ export class CanService implements OnModuleInit {
   private isChecking = false;
   private lastMessageTime = Date.now()
   private payload = {
-    metrics: {},
-    deviceId: process.env.DEVICE_ID,
-    timeStamp: null,
+    Metrics: {},
+    DeviceId: process.env.DEVICE_ID,
+    Timestamp: null,
   };
 
   constructor(
@@ -150,7 +150,7 @@ export class CanService implements OnModuleInit {
 
     for (const grandeur of config) {
       const nom = grandeur.nom;
-      const nomKey = nom.toLowerCase().replace(" ", "_");
+      const nomKey = nom.toLowerCase().replaceAll(" ", "_");
       const formule = grandeur.formule;
       const byteIndices = grandeur.byte;
 
