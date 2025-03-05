@@ -79,13 +79,21 @@ export class CanService implements OnModuleInit {
     }
   }
 
-  checkStorageAvail() {
+  checkStorageAvail(): string {
     try {
-      const frememo = os.freemem();
-      const freememoMb = frememo / (1024*1024);
-      if(freememoMb < 5) this.isMemoryFull  = true;
+      const result  = execSync(`df -k "/data"`);
+      const lines = result.toString().trim().split('\n');
+      const [, , , available,] = lines[1].split(/\s+/);
+
+      const availableMB = parseInt(available, 10) / 1024;
+      console.log("available space is : ",availableMB)
+      if (availableMB < 5) {
+        console.log("storage is full")
+         this.isMemoryFull = true;
+      } 
     } catch (e) {
       console.error(`Error retrieving storage: ${(e as Error).message}`);
+      return "N/A";
     }
   }
 
