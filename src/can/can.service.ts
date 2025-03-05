@@ -183,7 +183,6 @@ export class CanService implements OnModuleInit {
         const metrics = this.calculateParameters(buffer, config);
         Object.assign(this.payload.Metrics, metrics)
         //this.logger.log(metrics)
-        console.log(JSON.stringify(metrics))
       }
 
     } catch (error) {
