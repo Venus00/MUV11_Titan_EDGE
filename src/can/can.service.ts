@@ -6,6 +6,7 @@ import { CAN_PAYLOAD } from './muv11';
 import { MqttService } from 'src/mqtt/mqtt.service';
 import { exec, execSync } from 'child_process';
 import * as fs from 'fs';
+import * as os from 'os'
 import moment from 'moment';
 type ConfigItem = {
   nom: string;
@@ -23,7 +24,8 @@ export class CanService implements OnModuleInit {
   private counter = 0;
   private canId = undefined;
   private isChecking = false;
-  private lastMessageTime = Date.now()
+  private lastMessageTime = Date.now();
+  private isMemoryFull:boolean = false;
   private payload = {
     Metrics: {},
     DeviceId: process.env.DEVICE_ID,
@@ -39,6 +41,8 @@ export class CanService implements OnModuleInit {
     this.logger.log('[d] init connection with Device ...');
     this.init_device();
     this.logger.log('[d] init requesting from device ...');
+
+    this.checkStorageAvail();
     setInterval(() => {
       this.handleCanPayload();
     }, 50)
@@ -72,6 +76,16 @@ export class CanService implements OnModuleInit {
     } catch (error) {
       console.log(error);
       return false;
+    }
+  }
+
+  checkStorageAvail() {
+    try {
+      const frememo = os.freemem();
+      const freememoMb = frememo / (1024*1024);
+      if(freememoMb < 5) this.isMemoryFull  = true;
+    } catch (e) {
+      console.error(`Error retrieving storage: ${(e as Error).message}`);
     }
   }
 
@@ -129,16 +143,16 @@ export class CanService implements OnModuleInit {
       this.payload.Metrics = {};
     }*/
     if (((now - this.last_time) > 30000) && (payload_length !== 0)) {
-      console.log("publish payload")
-      this.payload.Metrics = {};
+      console.log("publish payload to mqtt")
       this.payload.Timestamp = this.getTimestampFromRTC();	
       this.last_time = Date.now();
       this.mqttService.publishPayload(JSON.stringify(this.payload));
-
+      if(!this.isMemoryFull) this.logPayload(JSON.stringify(this.payload))
+      this.payload.Metrics = {};
     }
   }
 
-  async logMessages(payload:string){
+  async logPayload(payload:string){
     const filename = moment(Date()).format('YYYY/MM/DD').toString();
     return  fs.appendFile(`/data/${filename}`, payload.toString() + "\n",
     function(err){
