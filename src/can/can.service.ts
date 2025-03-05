@@ -7,7 +7,7 @@ import { MqttService } from 'src/mqtt/mqtt.service';
 import { exec, execSync } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os'
-import  moment  from 'moment';
+import  * as moment  from 'moment';
 type ConfigItem = {
   nom: string;
   formule: string;
