@@ -45,7 +45,7 @@ export class CanService implements OnModuleInit {
     this.checkStorageAvail();
     setInterval(() => {
       this.handleCanPayload();
-    }, 50)
+    }, 30*1000)
   }
 
   async init_device() {
@@ -142,7 +142,7 @@ export class CanService implements OnModuleInit {
 
 
   async handleCanPayload() {
-    const now = Date.now();
+    //const now = Date.now();
     const payload_length = Object.keys(this.payload.Metrics).length;
     /*//if (payload_length >= 80) {
       this.payload.Timestamp = this.getTimestampFromRTC();
@@ -150,7 +150,8 @@ export class CanService implements OnModuleInit {
       this.last_time = Date.now();
       this.payload.Metrics = {};
     }*/
-    if (((now - this.last_time) > 30000) && (payload_length !== 0)) {
+    // if (((now - this.last_time) > 30000) && (payload_length !== 0)) {
+    if ((payload_length !== 0)) {
       console.log("publish payload to mqtt")
       this.payload.Timestamp = this.getTimestampFromRTC();	
       this.last_time = Date.now();
