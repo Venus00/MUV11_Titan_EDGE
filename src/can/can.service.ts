@@ -86,7 +86,6 @@ export class CanService implements OnModuleInit {
       const [, , , available,] = lines[1].split(/\s+/);
 
       const availableMB = parseInt(available, 10) / 1024;
-      console.log("available space is : ",availableMB)
       if (availableMB < 5) {
         console.log("storage is full")
          this.isMemoryFull = true;
@@ -142,6 +141,7 @@ export class CanService implements OnModuleInit {
 
 
   async handleCanPayload() {
+    console.log("date handle "  , new Date())
     //const now = Date.now();
     const payload_length = Object.keys(this.payload.Metrics).length;
     /*//if (payload_length >= 80) {
@@ -182,7 +182,7 @@ export class CanService implements OnModuleInit {
         const config = CAN_PAYLOAD[can_id].grandeurs;
         const metrics = this.calculateParameters(buffer, config);
         Object.assign(this.payload.Metrics, metrics)
-        this.logger.log(metrics)
+        //this.logger.log(metrics)
         console.log(JSON.stringify(metrics))
       }
 
