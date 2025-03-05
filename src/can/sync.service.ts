@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { Cron, SchedulerRegistry } from '@nestjs/schedule';
+import { Cron, SchedulerRegistry , CronExpression } from '@nestjs/schedule';
 import { commands } from './commands';
 import { CronJob, CronTime } from 'cron';
 import * as can from "socketcan";
@@ -31,8 +31,7 @@ export class SyncService implements OnModuleInit {
     this.syncTimeWithNtp(process.env.NTP_SERVER);
     this.updateRtc();
   }
-
-  @Cron('* * * * * *')
+  @Cron(CronExpression.EVERY_30_SECONDS)
   handleSyncronisation() {
 
     console.log("publish status");
