@@ -153,7 +153,7 @@ export class CanService implements OnModuleInit {
     // if (((now - this.last_time) > 30000) && (payload_length !== 0)) {
     if ((payload_length !== 0)) {
       console.log("publish payload to mqtt")
-      this.payload.Timestamp = this.getTimestampFromRTC();	
+      // this.payload.Timestamp = this.getTimestampFromRTC();	
       this.last_time = Date.now();
       this.mqttService.publishPayload(JSON.stringify(this.payload));
       if(!this.isMemoryFull) this.logPayload(JSON.stringify(this.payload))
