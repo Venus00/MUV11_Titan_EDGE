@@ -5,7 +5,8 @@ import * as can from "socketcan";
 import { CAN_PAYLOAD } from './muv11';
 import { MqttService } from 'src/mqtt/mqtt.service';
 import { exec, execSync } from 'child_process';
-
+import * as fs from 'fs';
+import moment from 'moment';
 type ConfigItem = {
   nom: string;
   formule: string;
@@ -137,6 +138,16 @@ export class CanService implements OnModuleInit {
     }
   }
 
+  async logMessages(payload:string){
+    const filename = moment(Date()).format('YYYY/MM/DD').toString();
+    return  fs.appendFile(`/data/${filename}`, payload.toString() + "\n",
+    function(err){
+        if (err){
+            return console.log(err);
+        }
+    }
+);
+  }
   onReaderData(data: any) {
     try {
       this.lastMessageTime = Date.now();
