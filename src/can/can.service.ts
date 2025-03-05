@@ -7,7 +7,7 @@ import { MqttService } from 'src/mqtt/mqtt.service';
 import { exec, execSync } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os'
-import { moment } from 'moment';
+import  moment  from 'moment';
 type ConfigItem = {
   nom: string;
   formule: string;
@@ -162,7 +162,7 @@ export class CanService implements OnModuleInit {
   }
 
   async logPayload(payload:string){
-    const filename = moment(Date()).format('YYYY/MM/DD').toString();
+    const filename = moment().format('YYYY-MM-DD');
     return  fs.appendFile(`/data/${filename}`, payload.toString() + "\n",
     function(err){
         if (err){
