@@ -163,7 +163,7 @@ export class CanService implements OnModuleInit {
 
   async logPayload(payload:string){
     const filename = moment().format('YYYY-MM-DD');
-    return  fs.appendFile(`/data/${filename}`, payload.toString() + "\n",
+    return  fs.appendFile(`/data/${filename}-can.txt`, payload.toString() + "\n",
     function(err){
         if (err){
             return console.log(err);

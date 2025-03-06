@@ -6,11 +6,15 @@ import * as can from "socketcan";
 import { exec, execSync } from 'child_process';
 import { MqttService } from 'src/mqtt/mqtt.service';
 import { networkInterfaces } from 'os';
-
+import * as fs from 'fs';
+import * as os from 'os'
+import  * as moment  from 'moment';
 @Injectable()
 export class SyncService implements OnModuleInit {
 
   private readonly logger = new Logger(SyncService.name);
+  private isMemoryFull:boolean = false;
+
   private payload = {
     DeviceId: process.env.DEVICE_ID,
     MAC_Address: null,
@@ -30,6 +34,8 @@ export class SyncService implements OnModuleInit {
     this.payload.MAC_Address = this.getMacAddress();
     this.syncTimeWithNtp(process.env.NTP_SERVER);
     this.updateRtc();
+    this.checkStorageAvail();
+
   }
   @Cron(CronExpression.EVERY_30_SECONDS)
   handleSyncronisation() {
@@ -42,12 +48,29 @@ export class SyncService implements OnModuleInit {
       this.payload.storage_avail = this.getStorageAvail();
       this.payload.Timestamp = this.getTimestampFromRTC();
       this.mqttService.publishStatus(JSON.stringify(this.payload));
+      if(!this.isMemoryFull) this.logPayload(JSON.stringify(this.payload))
+
     } catch (error) {
       console.log("error status calculation")
     }
 
   }
+  checkStorageAvail(): string {
+    try {
+      const result  = execSync(`df -k "/data"`);
+      const lines = result.toString().trim().split('\n');
+      const [, , , available,] = lines[1].split(/\s+/);
 
+      const availableMB = parseInt(available, 10) / 1024;
+      if (availableMB < 7008) {
+        console.log("storage is full")
+         this.isMemoryFull = true;
+      } 
+    } catch (e) {
+      console.error(`Error retrieving storage: ${(e as Error).message}`);
+      return "N/A";
+    }
+  }
   getTimestampFromRTC() {
       try {
           const result = execSync("sudo hwclock --utc --noadjfile", { encoding: "utf8" }).trim();
@@ -143,7 +166,16 @@ export class SyncService implements OnModuleInit {
       throw new Error(`Error executing 'uptime': ${(e as Error).message}`);
     }
   }
-
+  async logPayload(payload:string){
+    const filename = moment().format('YYYY-MM-DD');
+    return  fs.appendFile(`/data/${filename}-status.txt`, payload.toString() + "\n",
+    function(err){
+        if (err){
+            return console.log(err);
+        }
+    }
+);
+  }
   getStorageAvail(): string {
     try {
       const result = execSync("df -h /usr/share", { encoding: "utf-8" });
