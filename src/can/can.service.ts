@@ -86,7 +86,7 @@ export class CanService implements OnModuleInit {
       const [, , , available,] = lines[1].split(/\s+/);
 
       const availableMB = parseInt(available, 10) / 1024;
-      if (availableMB < 5) {
+      if (availableMB < 7008) {
         console.log("storage is full")
          this.isMemoryFull = true;
       } 
