@@ -45,7 +45,7 @@ export class CanService implements OnModuleInit {
     this.checkStorageAvail();
     setInterval(() => {
       this.handleCanPayload();
-    }, 10*1000)
+    }, 30*1000)
   }
 
   async init_device() {
