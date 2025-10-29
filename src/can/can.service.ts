@@ -152,6 +152,16 @@ export class CanService implements OnModuleInit {
     }*/
     // if (((now - this.last_time) > 30000) && (payload_length !== 0)) {
     if ((payload_length !== 0)) {
+
+      /***@ ADD Logic to check engine hours if 0 don't publish !*/
+      const engineHours = this.payload.Metrics["engine_working_hour"];
+      if (!engineHours || Number(engineHours) === 0) {
+        console.warn("[CAN] Skipping payload — ENGINE WORKING HOUR is 0 or undefined");
+        this.payload.Metrics = {}; // clear for next cycle
+        return;
+      }
+      /*Logic ending ;) */
+      
       console.log("publish payload to mqtt")
       this.payload.Timestamp = this.getTimestampFromRTC();	
       this.last_time = Date.now();
